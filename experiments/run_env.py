@@ -46,6 +46,7 @@ class Args:
 def main(args):
     if args.mock:
         robot_client = PrintRobot(8, dont_print=True)
+        # robot_client = PrintRobot(6, dont_print=True)
         camera_clients = {}
     else:
         camera_clients = {
@@ -119,13 +120,16 @@ def main(args):
                     )
             if args.start_joints is None:
                 reset_joints = np.deg2rad(
-                    [0, -90, 90, -90, -90, 0, 0]
-                    # [0, -90, 90, -90, -90, 0]
+                    # [0, -90, 90, -90, -90, 0, 0]
+                    [0, -90, 90, -90, -90, 0]
                 )  # Change this to your own reset joints
             else:
                 reset_joints = args.start_joints
+            print("Start joints: ", args.start_joints)
             agent = GelloAgent(port=gello_port, start_joints=args.start_joints)
             curr_joints = env.get_obs()["joint_positions"]
+            print("Reset shape", reset_joints.shape)
+            print("Current shape", curr_joints.shape) 
             if reset_joints.shape == curr_joints.shape:
                 max_delta = (np.abs(curr_joints - reset_joints)).max()
                 steps = min(int(max_delta / 0.01), 100)
@@ -156,7 +160,8 @@ def main(args):
 
     abs_deltas = np.abs(start_pos - joints)
     id_max_joint_delta = np.argmax(abs_deltas)
-
+    print("Mujoco Joints: ", joints)
+    print("Start Joints: ", start_pos)
     max_joint_delta = 0.8
     if abs_deltas[id_max_joint_delta] > max_joint_delta:
         id_mask = abs_deltas > max_joint_delta

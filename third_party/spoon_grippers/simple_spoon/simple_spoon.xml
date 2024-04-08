@@ -1,17 +1,24 @@
-<mujoco>
+<mujoco model="simple_spoon">
     <!-- <include file="scene.xml"/> -->
+  <compiler angle="radian" meshdir="assets" autolimits="true"/>
+
     <asset>
-        <mesh file="assets/simple_spoon.stl" scale="0.0012 0.0012 0.0012"/>
+        <mesh file="simple_spoon.stl" scale="0.0012 0.0012 0.0012"/>
     </asset>
 
     <worldbody>
 
-        <body name="end_effector" pos="0 0 0.15" euler="1.57 0 0">
+        <!-- <body name="end_effector" pos="0 0 0" euler="0.0 0.0 0.0"> -->
+        <body name="end_effector" pos="0 0 0.15" euler="1.57 1.57 0">
             <!-- Visual Geometry -->
             <geom type="mesh" mesh="simple_spoon" rgba="0.1 0.3 0.3 1"/>
 
             <!-- Collision Geometry -->
-            <geom type="mesh" mesh="simple_spoon" conaffinity="0" contype="1"/>
+            <geom type="mesh" mesh="simple_spoon" conaffinity="0" contype="0" />
+
+            <!-- Adjust mass and inertia properties -->
+            <!-- <inertial mass="0.05" pos="0 0 0" diaginertia="0.001 0.001 0.001"/> -->
+            <inertial mass="0.05" pos="0 0 0.15" euler="1.57 1.57 0" diaginertia="4.16206e-06 3.52216e-06 8.88131e-07"/>
         </body>
 
     </worldbody>
