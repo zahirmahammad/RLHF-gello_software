@@ -78,8 +78,8 @@ if __name__ == "__main__":
 
     env = RobotEnv(robot_client, control_rate_hz=Args.hz, camera_dict=camera_clients)
 
-    # execute_trajectory(env, csv_file_path)
-    print(print_state(env))
+    execute_trajectory(env, csv_file_path)
+    # print(print_state(env))
     # main(tyro.cli(Args))
 
 

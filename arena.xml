@@ -1,5 +1,5 @@
 <mujoco model="unnamed_model">
-  <compiler autolimits="true" angle="radian"/>
+  <compiler autolimits="true" angle="radian" convexhull="true"/>
   <option integrator="implicitfast"/>
   <visual>
     <global azimuth="120" elevation="-20"/>
@@ -35,7 +35,6 @@
         </default>
       </default>
     </default>
-    <default class="ur5e scene/simple_spoon/"/>
   </default>
   <asset>
     <texture name="ur5e scene//unnamed_texture_0" type="skybox" builtin="gradient" rgb1="0.29999999999999999 0.5 0.69999999999999996" rgb2="0 0 0" width="512" height="3072"/>
@@ -65,7 +64,7 @@
     <mesh name="ur5e scene/wrist2_1" class="ur5e scene/" file="wrist2_1-258ca475798c530d954723dc29f3d67086ead0d9.obj"/>
     <mesh name="ur5e scene/wrist2_2" class="ur5e scene/" file="wrist2_2-c6734971531db7f2f09e746377aa9faccb69b192.obj"/>
     <mesh name="ur5e scene/wrist3" class="ur5e scene/" file="wrist3-a1fffb4f599e121fb18be40e087b6fd7fb164e59.obj"/>
-    <mesh name="ur5e scene/simple_spoon/simple_spoon" class="ur5e scene/simple_spoon/" file="simple_spoon-ed2261fff37c741aa31eb52905715e4bfcdbabd6.stl" scale="0.0011999999999999999 0.0011999999999999999 0.0011999999999999999"/>
+    <mesh name="ur5e scene/simple_spoon" class="ur5e scene/" file="simple_spoon-ed2261fff37c741aa31eb52905715e4bfcdbabd6.stl" scale="0.0011999999999999999 0.0011999999999999999 0.0011999999999999999"/>
   </asset>
   <worldbody>
     <body name="ur5e scene/">
@@ -121,13 +120,11 @@
                     <joint name="ur5e scene/wrist_3_joint" class="ur5e scene/size1"/>
                     <geom name="ur5e scene//unnamed_geom_28" class="ur5e scene/visual" material="ur5e scene/linkgray" mesh="ur5e scene/wrist3"/>
                     <geom name="ur5e scene//unnamed_geom_29" class="ur5e scene/eef_collision" size="0.040000000000000001 0.02" pos="0 0.080000000000000002 0" quat="1 1 0 0"/>
-                    <site name="ur5e scene/attachment_site" pos="0 0.10000000000000001 0" quat="-1 1 0 0"/>
-                    <body pos="0 0.10000000000000001 0" quat="-1 1 0 0" name="ur5e scene/simple_spoon/">
-                      <body name="ur5e scene/simple_spoon/end_effector" pos="0 0 0.14999999999999999" euler="1.5700000000000001 1.5700000000000001 0">
-                        <geom name="ur5e scene/simple_spoon//unnamed_geom_0" class="ur5e scene/simple_spoon/" type="mesh" rgba="0.10000000000000001 0.29999999999999999 0.29999999999999999 1" mesh="ur5e scene/simple_spoon/simple_spoon"/>
-                        <geom name="ur5e scene/simple_spoon//unnamed_geom_1" class="ur5e scene/simple_spoon/" type="mesh" contype="0" conaffinity="0" mesh="ur5e scene/simple_spoon/simple_spoon"/>
-                        <inertial pos="0 0 0.14999999999999999" euler="1.5700000000000001 1.5700000000000001 0" mass="0.050000000000000003" diaginertia="4.1620600000000001e-06 3.5221600000000001e-06 8.8813100000000003e-07"/>
-                      </body>
+                    <body name="ur5e scene/simple_spoon" pos="0 0.26000000000000001 0" euler="0 -1.5700000000000001 0">
+                      <geom name="ur5e scene//unnamed_geom_30" type="mesh" rgba="0.10000000000000001 0.29999999999999999 0.29999999999999999 1" mesh="ur5e scene/simple_spoon"/>
+                      <geom name="ur5e scene//unnamed_geom_31" type="mesh" contype="1" conaffinity="0" mesh="ur5e scene/simple_spoon"/>
+                      <inertial pos="0 0 0.16" euler="1.5700000000000001 1.5700000000000001 0" mass="0.050000000000000003" diaginertia="0.01 0.01 0.01"/>
+                      <site name="ur5e scene/attachment_site" pos="0 0.10000000000000001 0" quat="-1 1 0 0"/>
                     </body>
                   </body>
                 </body>
