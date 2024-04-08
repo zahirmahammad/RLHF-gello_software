@@ -1,0 +1,18 @@
+<mujoco>
+    <!-- <include file="scene.xml"/> -->
+    <asset>
+        <mesh file="assets/simple_spoon.stl" scale="0.0012 0.0012 0.0012"/>
+    </asset>
+
+    <worldbody>
+
+        <body name="end_effector" pos="0 0 0.15" euler="1.57 0 0">
+            <!-- Visual Geometry -->
+            <geom type="mesh" mesh="simple_spoon" rgba="0.1 0.3 0.3 1"/>
+
+            <!-- Collision Geometry -->
+            <geom type="mesh" mesh="simple_spoon" conaffinity="0" contype="1"/>
+        </body>
+
+    </worldbody>
+</mujoco>
