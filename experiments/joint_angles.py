@@ -64,7 +64,7 @@ def execute_trajectory(env, csv_file_path):
         # Set the joint angles
         time.sleep(0.8)
         moved = env.step(np.array(angles))
-        print(moved)
+        print(moved["joint_positions"])
         
 
 if __name__ == "__main__":
