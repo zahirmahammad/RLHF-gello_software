@@ -59,7 +59,7 @@ def execute_trajectory(env, csv_file_path):
     # Convert angles to lists of lists
     joint_angles = data[['shoulder_pan_angle', 'shoulder_lift_angle','elbow_angle', 'wrist1_angle', 'wrist2_angle', 'wrist3_angle']].values.tolist()
 
-    # joint_angles.append([0.0, -1.57, 0.0, -1.57, 0.0, 0.0])
+    joint_angles.append([0.0, -1.57, 0.0, -1.57, 0.0, 0.0])
     for angles in joint_angles:
         # Set the joint angles
         time.sleep(0.8)
