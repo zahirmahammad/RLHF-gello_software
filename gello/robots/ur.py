@@ -8,7 +8,7 @@ from gello.robots.robot import Robot
 class URRobot(Robot):
     """A class representing a UR robot."""
 
-    def __init__(self, robot_ip: str = "192.168.1.10", no_gripper: bool = False):
+    def __init__(self, robot_ip: str = "192.168.77.20", no_gripper: bool = True):
         import rtde_control
         import rtde_receive
 
@@ -30,6 +30,7 @@ class URRobot(Robot):
 
         [print("connect") for _ in range(4)]
 
+        # print(self.get_joint_state())
         self._free_drive = False
         self.robot.endFreedriveMode()
         self._use_gripper = not no_gripper
@@ -122,7 +123,7 @@ class URRobot(Robot):
 
 
 def main():
-    robot_ip = "192.168.1.11"
+    robot_ip = "192.168.77.20"
     ur = URRobot(robot_ip, no_gripper=True)
     print(ur)
     ur.set_freedrive_mode(True)

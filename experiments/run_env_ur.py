@@ -4,6 +4,7 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional, Tuple
+import csv
 
 import numpy as np
 import tyro
@@ -27,12 +28,13 @@ def print_color(*args, color=None, attrs=(), **kwargs):
 @dataclass
 class Args:
     agent: str = "none"
-    robot_port: int = 6001 #for_mujoco
-    # robot_port: int = 50003  # for trajectory
+    # robot_port: int = 6001 #for_mujoco
+    robot_port: int = 50003  # for trajectory
     wrist_camera_port: int = 5000
     base_camera_port: int = 5001
-    hostname: str = "127.0.0.1" #for_mujoco
-    # hostname: str = "192.168.77.243"
+    # hostname: str = "127.0.0.1" #for_mujoco
+    hostname: str = "192.168.77.243"
+    robot_ip: str = "192.168.77.20"
     robot_type: str = None  # only needed for quest agent or spacemouse agent
     hz: int = 100
     start_joints: Optional[Tuple[float, ...]] = None
@@ -120,7 +122,7 @@ def main(args):
             if args.start_joints is None:
                 print('in if condition')
                 reset_joints = (
-                    [-1.57, -1.57, 1.57, -1.57, -1.57, 3.14]
+                    [1.57, -1.57, -1.57, -1.57, 1.57, 0.0]
                 )  # Change this to your own reset joints
             else:
                 reset_joints = np.array(args.start_joints)
@@ -242,7 +244,7 @@ def main(args):
     start_time = time.time()
     while True:
         gello_angle = agent.act(obs)
-        if (0.261799 > gello_angle[0] > -0.261799) and (-1.309 > gello_angle[1] > -1.8326) and (1.8326 > gello_angle[2] > 1.309):
+        if (2.35619449 > gello_angle[0] > 1.04719755) and (-1.22173048 > gello_angle[1] > -2.26892803) and  (-1.22173048 > gello_angle[2] > -2.0943951) and (0 > gello_angle[3] > -3.14) and (3.14 > gello_angle[4] > 0) :
             num = time.time() - start_time
             message = f"\rTime passed: {round(num, 2)}          "
             print_color(
@@ -275,7 +277,15 @@ def main(args):
                 else:
                     raise ValueError(f"Invalid state {state}")
             obs = env.step(action)
-
+            # print("Current: ", env.get_obs()["joint_positions"])
+            # Specify the file path
+            csv_file_path = 'csv/output.csv'# Writing to CSV file
+            with open(csv_file_path, mode='a', newline='') as file:
+                writer = csv.writer(file)
+                if file.tell() == 0:
+                    writer.writerow(['shoulder_pan_angle', 'shoulder_lift_angle', 'elbow_angle', 'wrist1_angle', 'wrist2_angle', 'wrist3_angle'])  # Write the header    writer.writerows(data)
+                obs = env.get_obs()["joint_positions"]
+                writer.writerow(obs)
 
 if __name__ == "__main__":
     main(tyro.cli(Args))
