@@ -33,8 +33,10 @@ class Args:
     robot_port: int = 50003  # for trajectory
     wrist_camera_port: int = 5000
     base_camera_port: int = 5001
-    # hostname: str = "127.0.0.1"
-    hostname: str = "192.168.77.243"
+    hostname: str = "127.0.0.1"
+
+    #---- Hardware ---
+    # hostname: str = "192.168.77.243"
     # robot_ip: str = "192.168.77.20"
     robot_type: str = None  # only needed for quest agent or spacemouse agent
     hz: int = 100
@@ -65,7 +67,7 @@ def execute_trajectory(env, csv_file_path):
     # joint_angles.append([0.0, -1.57, 0.0, -1.57, 0.0, 0.0])
     for angles in joint_angles:
         # Set the joint angles
-        time.sleep(0.05)
+        time.sleep(0.1)
         moved = env.step(np.array(angles))
         print(moved["joint_positions"])
         
@@ -77,7 +79,7 @@ if __name__ == "__main__":
         # "wrist": ZMQClientCamera(port=args.wrist_camera_port, host=args.hostname),
         # "base": ZMQClientCamera(port=args.base_camera_port, host=args.hostname),
     }
-    csv_file_path =  Path(__file__).parent.parent / "csv" / "output.csv"
+    csv_file_path =  Path(__file__).parent.parent / "csv" / "tofu2_10_new.csv"
 
     env = RobotEnv(robot_client, control_rate_hz=Args.hz, camera_dict=camera_clients)
 
