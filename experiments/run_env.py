@@ -122,7 +122,7 @@ def main(args):
                 reset_joints = np.deg2rad(
                     # [0, -90, 90, -90, -90, 0, 0]
                     # [0, -90, 90, -90, -90, 0]
-                    [-90, -90, 90, -90, -90, 180]
+                    [90, -90, -90, -90, 90, 0]
                 )  # Change this to your own reset joints
             else:
                 reset_joints = args.start_joints

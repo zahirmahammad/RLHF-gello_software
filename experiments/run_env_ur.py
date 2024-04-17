@@ -28,13 +28,13 @@ def print_color(*args, color=None, attrs=(), **kwargs):
 @dataclass
 class Args:
     agent: str = "none"
-    # robot_port: int = 6001 #for_mujoco
-    robot_port: int = 50003  # for trajectory
+    robot_port: int = 6001 #for_mujoco
+    # robot_port: int = 50003  # for trajectory
     wrist_camera_port: int = 5000
     base_camera_port: int = 5001
-    # hostname: str = "127.0.0.1" #for_mujoco
-    hostname: str = "192.168.77.243"
-    robot_ip: str = "192.168.77.20"
+    hostname: str = "127.0.0.1" #for_mujoco
+    # hostname: str = "192.168.77.243"
+    # robot_ip: str = "192.168.77.20"
     robot_type: str = None  # only needed for quest agent or spacemouse agent
     hz: int = 100
     start_joints: Optional[Tuple[float, ...]] = None
