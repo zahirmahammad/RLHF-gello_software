@@ -29,8 +29,8 @@ def print_color(*args, color=None, attrs=(), **kwargs):
 @dataclass
 class Args:
     agent: str = "none"
-    # robot_port: int = 6001
-    robot_port: int = 50003  # for trajectory
+    robot_port: int = 6001
+    # robot_port: int = 50003  # for trajectory
     wrist_camera_port: int = 5000
     base_camera_port: int = 5001
     hostname: str = "127.0.0.1"
@@ -67,7 +67,7 @@ def execute_trajectory(env, csv_file_path):
     # joint_angles.append([0.0, -1.57, 0.0, -1.57, 0.0, 0.0])
     for angles in joint_angles:
         # Set the joint angles
-        time.sleep(0.1)
+        time.sleep(0.8)
         moved = env.step(np.array(angles))
         print(moved["joint_positions"])
         

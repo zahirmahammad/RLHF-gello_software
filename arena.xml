@@ -81,10 +81,10 @@
         <geom name="ur5e scene//unnamed_geom_1" class="ur5e scene/" type="box" size="0.5 0.5 0.5" rgba="0.5 0.40000000000000002 0.29999999999999999 1" pos="0 0.80000000000000004 0"/>
       </body>
       <body name="ur5e scene/bowl">
-        <geom name="ur5e scene//unnamed_geom_2" class="ur5e scene/" type="mesh" rgba="0.48999999999999999 0.67800000000000005 0.81999999999999995 1" pos="0.20000000000000001 0.84999999999999998 0.5" quat="0.70714100000000002 0.70707299999999995 0 0" mesh="ur5e scene/bowl"/>
+        <geom name="ur5e scene//unnamed_geom_2" class="ur5e scene/" type="mesh" rgba="0.48999999999999999 0.67800000000000005 0.81999999999999995 1" pos="0.20000000000000001 0.75 0.5" quat="0.70714100000000002 0.70707299999999995 0 0" mesh="ur5e scene/bowl"/>
       </body>
       <light name="ur5e scene/spotlight" class="ur5e scene/" mode="targetbodycom" target="ur5e scene/wrist_2_link" pos="0 -1 2"/>
-      <body name="ur5e scene/base" childclass="ur5e scene/ur5e" pos="-0.34999999999999998 0.59999999999999998 0.5" quat="1 0 0 1">
+      <body name="ur5e scene/base" childclass="ur5e scene/ur5e" pos="-0.34999999999999998 1 0.5" quat="1 0 0 1">
         <inertial pos="0 0 0" mass="4" diaginertia="0.0044333315599999999 0.0044333315599999999 0.0071999999999999998"/>
         <geom name="ur5e scene//unnamed_geom_3" class="ur5e scene/visual" material="ur5e scene/black" mesh="ur5e scene/base_0"/>
         <geom name="ur5e scene//unnamed_geom_4" class="ur5e scene/visual" material="ur5e scene/jointgray" mesh="ur5e scene/base_1"/>
