@@ -16,7 +16,7 @@ class Args:
     ###------ Hardware ------
     # hostname: str = "192.168.77.243"
     # robot_ip: str = "192.168.77.20"
-    robot_port: int = 50003  # for trajectory
+    # robot_port: int = 50003  # for trajectory
 
 
 
