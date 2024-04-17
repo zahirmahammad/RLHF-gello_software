@@ -14,6 +14,7 @@ from gello.data_utils.format_obs import save_frame
 from gello.env import RobotEnv
 from gello.robots.robot import PrintRobot
 from gello.zmq_core.robot_node import ZMQClientRobot
+import csv
 
 
 def print_color(*args, color=None, attrs=(), **kwargs):
@@ -249,6 +250,14 @@ def main(args):
             else:
                 raise ValueError(f"Invalid state {state}")
         obs = env.step(action)
+
+        csv_file_path = 'csv/output.csv'# Writing to CSV file
+        with open(csv_file_path, mode='a', newline='') as file:
+            writer = csv.writer(file)
+            if file.tell() == 0:
+                writer.writerow(['shoulder_pan_angle', 'shoulder_lift_angle', 'elbow_angle', 'wrist1_angle', 'wrist2_angle', 'wrist3_angle'])  # Write the header    writer.writerows(data)
+            obs = env.get_obs()["joint_positions"]
+            writer.writerow(obs)
 
 
 if __name__ == "__main__":
