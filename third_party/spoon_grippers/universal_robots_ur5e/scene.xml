@@ -1,6 +1,6 @@
 <mujoco model="ur5e scene">
- <include file="ur5e.xml"/>
-
+ <!-- <include file="ur5e.xml"/> -->
+  <include file="ur3e.xml"/>
   <statistic center="0.3 0 0.4" extent="0.8"/>
 
   <visual>
@@ -17,12 +17,13 @@
 
 
 
-        <mesh name="StudyTable" file="assets/table/StudyTable.stl" scale="0.01 0.01 0.01" />
+        <!-- <mesh name="StudyTable" file="assets/table/StudyTable.stl" scale="0.01 0.01 0.01" />
         <mesh name="Drawer_Wood" file="assets/table/Drawer_Wood.stl" scale="0.01 0.01 0.01" />
         <mesh name="Drawer_Handle" file="assets/table/Drawer_Handle.stl" scale="0.01 0.01 0.01" />
         <mesh name="Slide_Wood" file="assets/table/Slide_Wood.stl" scale="0.01 0.01 0.01" />
         <mesh name="Slide_Handle" file="assets/table/Slide_Handle.stl" scale="0.01 0.01 0.01" />
-        <mesh name="bowl" file="assets/bowl.STL" scale="0.001 0.001 0.001" />
+        <mesh name="bowl" file="assets/bowl.STL" scale="0.001 0.001 0.001" /> -->
+      
   </asset>
 
   <worldbody>
@@ -32,9 +33,9 @@
     <!-- <compiler angle="radian" /> -->
     <!-- <size njmax="500" nconmax="100" /> -->
 
-    <worldbody>
+    <!-- <worldbody>
 
-        <!-- <body name="table_base" pos="0 0 0">
+        <body name="table_base" pos="0 0 0">
             <geom pos="0 -0.4 -0.2" quat="0.707141 0.707073 0 0" type="mesh" rgba="0.5 0.4 0.3 1" mesh="StudyTable" />
         </body>
 
@@ -64,32 +65,35 @@
             <inertial pos="0 0 0" mass="0.01" diaginertia="0.001 0.001 0.001" />
             <joint name="button3_joint" pos="0 0 0" axis="0 0 1" type="slide" limited="true" range="-0.1 0" />
             <geom size="0.02 0.015" pos="0.3 -0.55 0.59" type="cylinder" rgba="0 0 0.5 1" />
-        </body> -->
-        <!-- Define the box -->
+        </body>
+        Define the box
         <body name="box" pos="0 0 0">
           <inertial pos="0 0 0" mass="0.01" diaginertia="0.001 0.001 0.001" />
           <geom pos="0 0.8 0" type="box" size="0.5 0.5 0.5" rgba="0.5 0.4 0.3 1" />
         </body>
-        <!-- <body name="box1" pos="0 0.1 0"> -->
-<!-- 
+
+        <body name="ur3e" pos="0 0 0">
+          <inertial pos="0 0 0" mass="0.01" diaginertia="0.001 0.001 0.001" />
+          <geom pos="0 0.8 0"  size="0.5 0.5 0.5" rgba="0.5 0.4 0.3 1" />
+        </body>
+        <body name="box1" pos="0 0.1 0">
+
           <joint axis="0 1 0" type="slide" name="slide_joint"/>
           <inertial pos="0 0 0" mass="0.01" diaginertia="0.001 0.001 0.001" />
-          <geom pos="-0.35 0.8 0.53" type="box" size="0.03 0.03 0.03" rgba="0.3 0.3 0.4 1" condim="3"/> -->
+          <geom pos="-0.35 0.8 0.53" type="box" size="0.03 0.03 0.03" rgba="0.3 0.3 0.4 1" condim="3"/>
         <body name="bowl">
-          <geom pos="0.2 0.75 0.5" quat="0.707141 0.707073 0 0" type="mesh" rgba="0.49 0.678 0.82 1" mesh="bowl" />
-        <!-- </body>        -->
-     </body>
+          <geom pos="0.2 0.75 0.5" quat="0.707141 0.707073 0 0" type="mesh" rgba="0.49 0.678 0.82 1" mesh="bowl" /> 
+        </body>
     
-    </worldbody>
+    </worldbody> -->
 
-    <compiler convexhull="false"/>
+    <!-- <compiler convexhull="false"/>
     <contact>
             <exclude name="exclude_2_body_0" body1="simple_spoon" body2="bowl"/>
             <exclude name="exclude_2_body_1" body1="wrist_3_link" body2="wrist_2_link"/>
-            <!-- <exclude name="exclude_2_body_1" body1="box1" body2="bowl"/> -->
     </contact>
-       
-</mujoco>
-          <!-- <composite type="particle" count="1 1 1" spacing="0.07" offset="0 0 1">
+        -->
+              <!-- <composite type="particle" count="1 1 1" spacing="0.07" offset="0 0 1">
               <geom type="box" size=".025 .025 .025" rgba=".8 .2 .1 1" condim="3"/>
           </composite> -->
+</mujoco>
