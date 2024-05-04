@@ -94,8 +94,8 @@ class RealSenseCamera(CameraDriver):
 def _debug_read(camera, save_datastream=False):
     import cv2
 
-    cv2.namedWindow("image")
-    cv2.namedWindow("depth")
+    # cv2.namedWindow("image")
+    # cv2.namedWindow("depth")
     counter = 0
     if not os.path.exists("images"):
         os.makedirs("images")
@@ -106,9 +106,13 @@ def _debug_read(camera, save_datastream=False):
         image, depth, depth_colormap = camera.read()
         depth = np.concatenate([depth, depth, depth], axis=-1)
         key = cv2.waitKey(1)
+        cv2.namedWindow("image", cv2.WINDOW_NORMAL)
         cv2.imshow("image", image[:, :, ::-1])
-        cv2.imshow("depth", depth)
+        cv2.setWindowProperty("image", cv2.WND_PROP_AUTOSIZE, cv2.WINDOW_NORMAL)
+        # cv2.imshow("depth", depth)
+        cv2.namedWindow("depth color map", cv2.WINDOW_NORMAL)
         cv2.imshow("depth color map", depth_colormap)
+        cv2.setWindowProperty("depth color map", cv2.WND_PROP_AUTOSIZE, cv2.WINDOW_NORMAL)
         if key == ord("s"):
             cv2.imwrite(f"images/image_{counter}.png", image[:, :, ::-1])
             cv2.imwrite(f"images/depth_{counter}.png", depth)
@@ -126,4 +130,4 @@ if __name__ == "__main__":
     print(device_ids)
     rs = RealSenseCamera(flip=False, device_id=device_ids[0])
     im, depth, depth_color = rs.read()
-    _debug_read(rs, save_datastream=True)
+    _debug_read(rs, save_datastream=False)
