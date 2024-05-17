@@ -20,7 +20,7 @@ if __name__=="__main__":
 
     print("TD3 Dir: ", td3_dir)
 
-    env_name = "Door"
+    env_name = "Wipe"
 
     env = suite.make(
         env_name,
