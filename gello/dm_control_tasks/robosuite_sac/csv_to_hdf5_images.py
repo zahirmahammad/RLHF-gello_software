@@ -4,22 +4,74 @@ import numpy as np
 import pandas as pd
 import glob 
 import os
+from PIL import Image
+import cv2
 
 # Create sample data
 csv_folder = "/home/sj/Downloads/csv"
+
+image_folder = "/home/sj/Downloads/images"
+
 low_dim_data = []
 for csv_file in glob.glob(os.path.join(csv_folder, '*.csv')):
     dataset = pd.read_csv(csv_file, usecols=range(10, 16))
     low_dim_data.append(dataset)
 
-print(low_dim_data[0].shape)
+it = 0
+image_data = []
+for image_file in glob.glob(os.path.join(image_folder, '*.jpg')):
+    image_file = cv2.imread(image_file)
+    image_file = np.array(cv2.resize(image_file, (84, 84)))
+    image_data.append(image_file)
+    it += 1
+
+image_data = np.array(image_data)
+image_data = np.reshape(image_data, (len(image_data), 84, 84, 3))
+
+print("Low dim data shape:", low_dim_data[0].shape)
+print("Image data shape:", image_data.shape)
+print("iterating over image data:", it)
 
 # Define the data
 total_samples = len(low_dim_data)
+
 env_args = {
-    "env_name": "example_env",
-    "env_type": "robosuite",
-    "env_kwargs": {"arg1": "value1", "arg2": "value2"}
+    "env_name": "Lift",
+    "type": 1,
+    "env_kwargs": {
+        "has_renderer": False,
+        "has_offscreen_renderer": True,
+        "ignore_done": True,
+        "use_object_obs": True,
+        "use_camera_obs": True,
+        "control_freq": 20,
+        "controller_configs": {
+            "type": "OSC_POSE",
+            "input_max": 1,
+            "input_min": -1,
+            "output_max": [0.05, 0.05, 0.05, 0.5, 0.5, 0.5],
+            "output_min": [-0.05, -0.05, -0.05, -0.5, -0.5, -0.5],
+            "kp": 150,
+            "damping": 1,
+            "impedance_mode": "fixed",
+            "kp_limits": [0, 300],
+            "damping_limits": [0, 10],
+            "position_limits": None,
+            "orientation_limits": None,
+            "uncouple_pos_ori": True,
+            "control_delta": True,
+            "interpolation": None,
+            "ramp_ratio": 0.2,
+        },
+        "robots": ["UR5e"],
+        "camera_depths": True,
+        "camera_heights": 84,
+        "camera_widths": 84,
+        "render_gpu_device_id": 0,
+        "reward_shaping": False,
+        "camera_names": ["agentview", "robot0_eye_in_hand"]
+    },
+    "env_version": "1.4.1",
 }
 
 # Define HDF5 file path
@@ -38,14 +90,16 @@ with h5py.File(file_path, "w") as f:
     data_group.attrs["total"] = total_samples
     data_group.attrs["env_args"] = json.dumps(env_args)
 
-    for i in range(len(low_dim_data)):
+    for i in range(len(low_dim_data)-1):
         rewards_data = [0]*(len(low_dim_data[i])-3) + [1]*3
         globals()[f'states_demo_{i}'] = np.array(low_dim_data[i])
         globals()[f'actions_demo_{i}'] = np.random.uniform(-1, 1, (len(low_dim_data[i]), 6))
         globals()[f'rewards_demo_{i}'] = rewards_data
         globals()[f'dones_demo_{i}'] = rewards_data
-        globals()[f'obs_demo_{i}'] = np.array(low_dim_data[i])
-        globals()[f'next_obs_demo_{i}'] = np.array(low_dim_data[i])
+        globals()[f'obs_demo_{i}'] = np.array(low_dim_data[i][:-1])
+        globals()[f'images_demo_{i}'] = image_data
+        globals()[f'next_obs_demo_{i}'] = np.array(low_dim_data[i][1:])
+
         # object_demo_
         num_rows = low_dim_data[i].shape[0]
         num_cols = 10
@@ -74,7 +128,7 @@ with h5py.File(file_path, "w") as f:
                 low, high = high, low
             object[:, col] = np.random.uniform(low=low, high=high, size=num_rows)
 
-        print("Actions shape:", np.array(globals()[f'actions_demo_{i}']).shape)
+        # print("Actions shape:", np.array(globals()[f'actions_demo_{i}']).shape)
 
 
         # Write data for the current trajectory
@@ -86,20 +140,24 @@ with h5py.File(file_path, "w") as f:
         demo_group.create_dataset("rewards", data=locals()[f"rewards_demo_{i}"])
         demo_group.create_dataset("dones", data=locals()[f"dones_demo_{i}"])
 
+
         # Write observation data directly
         obs_group = demo_group.create_group("obs")
-        obs_group.create_dataset("robot0_joint_pos", data=np.array(low_dim_data[i]))
+        obs_group.create_dataset("robot0_joint_pos", data=locals()[f"obs_demo_{i}"])
         obs_group.create_dataset("robot0_eef_pos", data=np.random.uniform(-1, 1, (num_rows, 3)))  
         obs_group.create_dataset("robot0_eef_quat", data=np.random.uniform(-1, 1, (num_rows, 4)))  
         obs_group.create_dataset("robot0_gripper_qpos", data=np.random.uniform(-1, 1, (num_rows, 1)))  
         obs_group.create_dataset("object", data=object)
-        
+        obs_group.create_dataset("robot0_eye_in_hand_image", data=locals()[f"images_demo_{i}"])
+    
+
         next_obs_group = demo_group.create_group("next_obs")
-        next_obs_group.create_dataset("robot0_joint_pos", data=np.array(low_dim_data[i]))
+        next_obs_group.create_dataset("robot0_joint_pos", data=locals()[f"next_obs_demo_{i}"])
         next_obs_group.create_dataset("robot0_eef_pos", data=np.random.uniform(-1, 1, (num_rows, 3))) 
         next_obs_group.create_dataset("robot0_eef_quat", data=np.random.uniform(-1, 1, (num_rows, 4)))  
         next_obs_group.create_dataset("robot0_gripper_qpos", data=np.random.uniform(-1, 1, (num_rows, 1))) 
         next_obs_group.create_dataset("object", data=object)
-    
-
+        next_obs_group.create_dataset("robot0_eye_in_hand_image", data=locals()[f"images_demo_{i}"])
+        
 print("Data has been written to:", file_path)
+print(low_dim_data[0].shape)

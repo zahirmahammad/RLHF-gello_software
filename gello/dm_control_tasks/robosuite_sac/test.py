@@ -1,31 +1,26 @@
-import os
-import time
-import sys
+import h5py
+import json
 import numpy as np
-from torch.utils.tensorboard import SummaryWriter
-import robosuite as suite
-from robosuite.wrappers.gym_wrapper import GymWrapper
+import pandas as pd
+import glob 
+import os
+# from joblib import Parallel, delayed
+# from forward_kinematics import ForwardKinematicsUR5e
 
-if __name__=="__main__":
-    print("BC Envi")
+# Create sample data
+# csv_folder = "/home/sj/Downloads/csv"
+csv_folder = "/home/sj/gello_software/csv"
+low_dim_data = []
+action_dataset = []
+robot_end_eff_pos = []
+robot_end_eff_quat = []
+states_data = []
+for csv_file in glob.glob(os.path.join(csv_folder, '*.csv')):
+    dataset = pd.read_csv(csv_file, usecols=range(0, 5), header=0)
+    action_dataframe = pd.read_csv(csv_file, usecols=range(6, 11), header=0)
+    robot_end_eff_pos_df = pd.read_csv(csv_file, usecols=range(6, 8), header=0)
+    robot_end_eff_quat_df = pd.read_csv(csv_file, usecols=range(9, 12), header=0)
+    states_dataframe = pd.read_csv(csv_file, usecols=range(0, 12), header=0)
 
-    if not os.path.exists("robosuite_sac/td3"):
-        os.makedirs("robosuite_sac/td3")
-        print("Made directory")
-
-    env_name = "Door"
-
-    env = suite.make(
-        env_name,
-        robots=["UR5e"],
-        controller_configs=suite.load_controller_config(default_controller="JOINT_VELOCITY"),
-        has_renderer=True,
-        horizon=300,
-        render_camera="frontview",
-        has_offscreen_renderer=True,
-        use_camera_obs=False,
-        reward_shaping=True,
-        control_freq=20,
-    )
-
-    env = GymWrapper(env)
+print(states_dataframe.head())
+print(states_dataframe.shape)

@@ -4,6 +4,7 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional, Tuple
+from forward_kinematics import ForwardKinematicsUR5e
 
 import numpy as np
 import tyro
@@ -43,8 +44,9 @@ class Args:
     bimanual: bool = False
     verbose: bool = False
 
-
 def main(args):
+    action_eff = []
+
     if args.mock:
         robot_client = PrintRobot(8, dont_print=True)
         # robot_client = PrintRobot(6, dont_print=True)
@@ -219,8 +221,9 @@ def main(args):
 
     save_path = None
     start_time = time.time()
+    start_time_print = time.time()
     while True:
-        num = time.time() - start_time
+        num = time.time() - start_time_print
         message = f"\rTime passed: {round(num, 2)}          "
         print_color(
             message,
@@ -251,13 +254,27 @@ def main(args):
                 raise ValueError(f"Invalid state {state}")
         obs = env.step(action)
 
-        csv_file_path = 'csv/output.csv'# Writing to CSV file
+        csv_file_path = 'csv/output20.csv'# Writing to CSV file
         with open(csv_file_path, mode='a', newline='') as file:
             writer = csv.writer(file)
             if file.tell() == 0:
-                writer.writerow(['shoulder_pan_angle', 'shoulder_lift_angle', 'elbow_angle', 'wrist1_angle', 'wrist2_angle', 'wrist3_angle'])  # Write the header    writer.writerows(data)
+                writer.writerow(['shoulder_pan_angle', 'shoulder_lift_angle', 'elbow_angle', 'wrist1_angle', 'wrist2_angle', 'wrist3_angle', 'end_eff_x', 'end_eff_y', 'end_eff_z', 'end_eff_roll', 'end_eff_pitch', 'end_eff_yaw', 'end_eff_w', 'end_eff_xq', 'end_eff_yq', 'end_eff_zq'])  # Write the header    writer.writerows(data)
             obs = env.get_obs()["joint_positions"]
-            writer.writerow(obs)
+
+            fk = ForwardKinematicsUR5e()
+
+            T = fk.get_transformation_matrix(θdeg1=obs[0], θdeg2=obs[1], θdeg3=obs[2], θdeg4=obs[3], θdeg5=obs[4], θdeg6=obs[5])
+
+            roll, pitch, yaw, x, y, z = fk.transform_to_rpy_and_xyz(T)
+            
+            w, xq, yq, zq = fk.convert_to_quaternions(roll, pitch, yaw)
+
+            obs = np.append(obs, [x, y, z, roll, pitch, yaw, w, xq, yq, zq])
+
+            # print(obs)
+            if time.time() - start_time > 0.1:
+                writer.writerow(obs)
+                start_time = time.time()
 
 
 if __name__ == "__main__":
