@@ -4,20 +4,56 @@ import numpy as np
 import pandas as pd
 import glob 
 import os
+# from joblib import Parallel, delayed
+# from forward_kinematics import ForwardKinematicsUR5e
 
 # Create sample data
-csv_folder = "/home/sj/Downloads/csv"
+# csv_folder = "/home/sj/Downloads/csv"
+csv_folder = "/home/sj/gello_software/csv"
+
 low_dim_data = []
 next_low_dim_data = []
+
+action_dataset = []
+next_action_dataset = []
+
+robot_end_eff_pos = []
+next_robot_end_eff_pos = []
+
+robot_end_eff_quat = []
+next_robot_end_eff_quat = []
+
+states_data = []
+next_states_data = []
+
 for csv_file in glob.glob(os.path.join(csv_folder, '*.csv')):
-    dataset = pd.read_csv(csv_file, usecols=range(10, 16), skiprows=1, engine='python')
-    next_dataset = pd.read_csv(csv_file, usecols=range(10, 16), skipfooter=1, engine='python')
+    dataset = pd.read_csv(csv_file, usecols=range(0, 6), skiprows=1, engine='python').astype(np.float64)
+    next_dataset = pd.read_csv(csv_file, usecols=range(0, 6), skipfooter=1, engine='python').astype(np.float64)
+
+    action_dataframe = pd.read_csv(csv_file, usecols=range(6, 12), skiprows=1, engine='python').astype(np.float64)
+    
+    robot_end_eff_pos_df = pd.read_csv(csv_file, usecols=range(6, 9), skiprows=1, engine='python').astype(np.float64)
+    next_robot_end_eff_pos_df = pd.read_csv(csv_file, usecols=range(6, 9), skipfooter=1, engine='python').astype(np.float64)   
+    
+    robot_end_eff_quat_df = pd.read_csv(csv_file, usecols=range(12, 16), skiprows=1, engine='python').astype(np.float64)
+    next_robot_end_eff_quat_df = pd.read_csv(csv_file, usecols=range(12, 16), skipfooter=1, engine='python').astype(np.float64)
+    
+    states_dataframe = pd.read_csv(csv_file, usecols=range(0, 16), skiprows=1, engine='python').astype(np.float64)
+
     low_dim_data.append(dataset)
     next_low_dim_data.append(next_dataset)
 
-print("Low dim data shape:", low_dim_data[0].shape)
-# print("Low dim data shape:", np.array(low_dim_data[0][1:]))
+    action_dataset.append(action_dataframe)
 
+    robot_end_eff_pos.append(robot_end_eff_pos_df)
+    next_robot_end_eff_pos.append(next_robot_end_eff_pos_df)
+
+    robot_end_eff_quat.append(robot_end_eff_quat_df)
+    next_robot_end_eff_quat.append(next_robot_end_eff_quat_df)
+
+    states_data.append(states_dataframe)
+
+print("Low dim data shape:", low_dim_data[0].shape)
 
 # Define the data
 total_samples = len(low_dim_data)
@@ -81,13 +117,7 @@ with h5py.File(file_path, "w") as f:
     data_group.attrs["env_args"] = json.dumps(env_args)
 
     for i in range(len(low_dim_data)):
-        rewards_data = [0]*(len(low_dim_data[i])-3) + [1]*3
-        globals()[f'states_demo_{i}'] = np.array(low_dim_data[i])
-        globals()[f'actions_demo_{i}'] = np.random.uniform(-1, 1, (len(low_dim_data[i]), 6))
-        globals()[f'rewards_demo_{i}'] = rewards_data
-        globals()[f'dones_demo_{i}'] = rewards_data
-        globals()[f'obs_demo_{i}'] = np.array(low_dim_data[i])
-        globals()[f'next_obs_demo_{i}'] = np.array(low_dim_data[i])
+
         # object_demo_
         num_rows = low_dim_data[i].shape[0]
         num_cols = 10
@@ -114,10 +144,21 @@ with h5py.File(file_path, "w") as f:
             low, high = column_ranges[col]
             if low > high:  # Ensure the correct range order
                 low, high = high, low
-            object[:, col] = np.random.uniform(low=low, high=high, size=num_rows)
+            object[:, col] = np.random.uniform(low=low, high=high, size=num_rows
+                                               )
+
+        rewards_data = [0]*(len(low_dim_data[i])-3) + [1]*3
+        globals()[f'states_demo_{i}'] = np.array(states_data[i])
+        globals()[f'actions_demo_{i}'] = np.array(action_dataset[i])
+        globals()[f'rewards_demo_{i}'] = rewards_data
+        globals()[f'dones_demo_{i}'] = rewards_data
+
+        globals()[f'obs_demo_{i}'] = np.array(low_dim_data[i])
+        globals()[f'next_obs_demo_{i}'] = np.array(next_low_dim_data[i])
+
 
         print("Actions shape:", np.array(globals()[f'actions_demo_{i}']).shape)
-
+        
         # Write data for the current trajectory
         demo_group = data_group.create_group(f"demo_{i}")
         demo_group.attrs["num_samples"] = low_dim_data[i].shape[0]
@@ -127,20 +168,17 @@ with h5py.File(file_path, "w") as f:
         demo_group.create_dataset("rewards", data=locals()[f"rewards_demo_{i}"])
         demo_group.create_dataset("dones", data=locals()[f"dones_demo_{i}"])
 
-
         # Write observation data directly
         obs_group = demo_group.create_group("obs")
-        obs_group.create_dataset("robot0_joint_pos", data=np.array(low_dim_data[i]))
-        obs_group.create_dataset("robot0_eef_pos", data=np.random.uniform(-1, 1, (num_rows, 3)))  
-        obs_group.create_dataset("robot0_eef_quat", data=np.random.uniform(-1, 1, (num_rows, 4)))  
-        obs_group.create_dataset("robot0_gripper_qpos", data=np.random.uniform(-1, 1, (num_rows, 1)))  
+        obs_group.create_dataset("robot0_joint_pos", data=locals()[f"obs_demo_{i}"])
+        obs_group.create_dataset("robot0_eef_pos", data=np.array(robot_end_eff_pos[i])) 
+        obs_group.create_dataset("robot0_eef_quat", data=np.array(robot_end_eff_quat[i]))
         obs_group.create_dataset("object", data=object)
         
         next_obs_group = demo_group.create_group("next_obs")
-        next_obs_group.create_dataset("robot0_joint_pos", data=np.array(next_low_dim_data[i]))
-        next_obs_group.create_dataset("robot0_eef_pos", data=np.random.uniform(-1, 1, (num_rows, 3))) 
-        next_obs_group.create_dataset("robot0_eef_quat", data=np.random.uniform(-1, 1, (num_rows, 4)))  
-        next_obs_group.create_dataset("robot0_gripper_qpos", data=np.random.uniform(-1, 1, (num_rows, 1))) 
+        next_obs_group.create_dataset("robot0_joint_pos", data=locals()[f"next_obs_demo_{i}"])
+        next_obs_group.create_dataset("robot0_eef_pos", data=np.array(next_robot_end_eff_pos[i])) 
+        next_obs_group.create_dataset("robot0_eef_quat", data=np.array(next_robot_end_eff_quat[i]))  
         next_obs_group.create_dataset("object", data=object)
     
 
