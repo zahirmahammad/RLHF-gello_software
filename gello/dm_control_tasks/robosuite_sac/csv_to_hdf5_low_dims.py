@@ -9,7 +9,7 @@ import os
 
 # Create sample data
 # csv_folder = "/home/sj/Downloads/csv"
-csv_folder = "/home/sj/gello_software/csv"
+csv_folder = "/home/zahir/D/gcodes/RLHF-gello_software/csv"
 
 low_dim_data = []
 next_low_dim_data = []
@@ -97,7 +97,7 @@ env_args = {
 }
 
 # Define HDF5 file path
-file_path = "/home/sj/Downloads/data.hdf5"
+file_path = "/home/zahir/Downloads/the_data.hdf5"
 
 # if not os.path.exists(file_path):
 #     os.makedirs(file_path)
