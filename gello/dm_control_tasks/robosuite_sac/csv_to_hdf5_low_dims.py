@@ -27,18 +27,18 @@ states_data = []
 next_states_data = []
 
 for csv_file in glob.glob(os.path.join(csv_folder, '*.csv')):
-    dataset = pd.read_csv(csv_file, usecols=range(0, 6), skiprows=1, engine='python').astype(np.float64)
-    next_dataset = pd.read_csv(csv_file, usecols=range(0, 6), skipfooter=1, engine='python').astype(np.float64)
+    dataset = pd.read_csv(csv_file, usecols=range(0, 6), skipfooter=1, engine='python').astype(np.float64)
+    next_dataset = pd.read_csv(csv_file, usecols=range(0, 6), skiprows=1, engine='python').astype(np.float64)
 
-    action_dataframe = pd.read_csv(csv_file, usecols=range(6, 12), skiprows=1, engine='python').astype(np.float64)
+    action_dataframe = pd.read_csv(csv_file, usecols=range(6, 12), skipfooter=1, engine='python').astype(np.float64)
     
-    robot_end_eff_pos_df = pd.read_csv(csv_file, usecols=range(6, 9), skiprows=1, engine='python').astype(np.float64)
-    next_robot_end_eff_pos_df = pd.read_csv(csv_file, usecols=range(6, 9), skipfooter=1, engine='python').astype(np.float64)   
+    robot_end_eff_pos_df = pd.read_csv(csv_file, usecols=range(6, 9), skipfooter=1, engine='python').astype(np.float64)
+    next_robot_end_eff_pos_df = pd.read_csv(csv_file, usecols=range(6, 9), skiprows=1, engine='python').astype(np.float64)   
     
-    robot_end_eff_quat_df = pd.read_csv(csv_file, usecols=range(12, 16), skiprows=1, engine='python').astype(np.float64)
-    next_robot_end_eff_quat_df = pd.read_csv(csv_file, usecols=range(12, 16), skipfooter=1, engine='python').astype(np.float64)
+    robot_end_eff_quat_df = pd.read_csv(csv_file, usecols=range(12, 16), skipfooter=1, engine='python').astype(np.float64)
+    next_robot_end_eff_quat_df = pd.read_csv(csv_file, usecols=range(12, 16), skiprows=1, engine='python').astype(np.float64)
     
-    states_dataframe = pd.read_csv(csv_file, usecols=range(0, 16), skiprows=1, engine='python').astype(np.float64)
+    states_dataframe = pd.read_csv(csv_file, usecols=range(0, 16), skipfooter=1, engine='python').astype(np.float64)
 
     low_dim_data.append(dataset)
     next_low_dim_data.append(next_dataset)
@@ -85,7 +85,7 @@ env_args = {
             "interpolation": None,
             "ramp_ratio": 0.2,
         },
-        "robots": ["Panda"],
+        "robots": ["UR5e"],
         "camera_depths": True,
         "camera_heights": 84,
         "camera_widths": 84,
@@ -149,7 +149,8 @@ with h5py.File(file_path, "w") as f:
 
         rewards_data = [0]*(len(low_dim_data[i])-3) + [1]*3
         globals()[f'states_demo_{i}'] = np.array(states_data[i])
-        globals()[f'actions_demo_{i}'] = np.array(action_dataset[i])
+        # globals()[f'actions_demo_{i}'] = np.array(action_dataset[i])
+        globals()[f'actions_demo_{i}'] = np.array(next_low_dim_data[i])
         globals()[f'rewards_demo_{i}'] = rewards_data
         globals()[f'dones_demo_{i}'] = rewards_data
 
