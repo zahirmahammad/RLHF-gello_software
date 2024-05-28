@@ -37,7 +37,7 @@ class Args:
 
     #---- Hardware ---
     # hostname: str = "192.168.77.243"
-    # robot_ip: str = "192.168.77.20"
+    # robot_ip: str = "192.168.77.21"
     robot_type: str = None  # only needed for quest agent or spacemouse agent
     hz: int = 100
     start_joints: Optional[Tuple[float, ...]] = None
