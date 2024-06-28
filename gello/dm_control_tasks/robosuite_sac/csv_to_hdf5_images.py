@@ -8,7 +8,8 @@ import cv2
 
 # Create sample data
 # csv_folder = "/home/sj/Downloads/csv"
-csv_folder = "/home/sj/gello_software/csv"
+csv_folder = "/home/sj/Assistive_Feeding_Gello/csv/samestartdiffgoal100"
+
 
 image_folder = "/home/sj/Downloads/images"
 
@@ -28,18 +29,18 @@ states_data = []
 next_states_data = []
 
 for csv_file in glob.glob(os.path.join(csv_folder, '*.csv')):
-    dataset = pd.read_csv(csv_file, usecols=range(0, 6), skiprows=1, engine='python').astype(np.float64)
-    next_dataset = pd.read_csv(csv_file, usecols=range(0, 6), skipfooter=1, engine='python').astype(np.float64)
+    dataset = pd.read_csv(csv_file, usecols=range(0, 6), skipfooter=1, engine='python').astype(np.float64)
+    next_dataset = pd.read_csv(csv_file, usecols=range(0, 6), skiprows=1, engine='python').astype(np.float64)
 
-    action_dataframe = pd.read_csv(csv_file, usecols=range(6, 12), skiprows=1, engine='python').astype(np.float64)
+    action_dataframe = pd.read_csv(csv_file, usecols=range(6, 12), skipfooter=1, engine='python').astype(np.float64)
     
-    robot_end_eff_pos_df = pd.read_csv(csv_file, usecols=range(6, 9), skiprows=1, engine='python').astype(np.float64)
-    next_robot_end_eff_pos_df = pd.read_csv(csv_file, usecols=range(6, 9), skipfooter=1, engine='python').astype(np.float64)   
+    robot_end_eff_pos_df = pd.read_csv(csv_file, usecols=range(6, 9), skipfooter=1, engine='python').astype(np.float64)
+    next_robot_end_eff_pos_df = pd.read_csv(csv_file, usecols=range(6, 9), skiprows=1, engine='python').astype(np.float64)   
     
-    robot_end_eff_quat_df = pd.read_csv(csv_file, usecols=range(12, 16), skiprows=1, engine='python').astype(np.float64)
-    next_robot_end_eff_quat_df = pd.read_csv(csv_file, usecols=range(12, 16), skipfooter=1, engine='python').astype(np.float64)
+    robot_end_eff_quat_df = pd.read_csv(csv_file, usecols=range(12, 16), skipfooter=1, engine='python').astype(np.float64)
+    next_robot_end_eff_quat_df = pd.read_csv(csv_file, usecols=range(12, 16), skiprows=1, engine='python').astype(np.float64)
     
-    states_dataframe = pd.read_csv(csv_file, usecols=range(0, 16), skiprows=1, engine='python').astype(np.float64)
+    states_dataframe = pd.read_csv(csv_file, usecols=range(0, 16), skipfooter=1, engine='python').astype(np.float64)
 
     low_dim_data.append(dataset)
     next_low_dim_data.append(next_dataset)
@@ -54,6 +55,8 @@ for csv_file in glob.glob(os.path.join(csv_folder, '*.csv')):
 
     states_data.append(states_dataframe)
 
+print("Low dim data shape:", low_dim_data[0].shape)
+
 it = 0
 image_data = []
 for image_file in glob.glob(os.path.join(image_folder, '*.jpg')):
@@ -63,7 +66,8 @@ for image_file in glob.glob(os.path.join(image_folder, '*.jpg')):
     it += 1
 
 image_data = np.array(image_data)
-image_data = np.reshape(image_data, (len(image_data), 84, 84, 3))
+image_data = np.reshape(image_data, (len(image_data), 3, 84, 84))
+image_data = np.concatenate((image_data, np.zeros((len(image_data), 1, 84, 84))), axis=1)
 
 print("Low dim data shape:", low_dim_data[0].shape)
 print("Image data shape:", image_data.shape)
@@ -73,7 +77,7 @@ print("iterating over image data:", it)
 # Define the data
 total_samples = len(low_dim_data)
 env_args = {
-    "env_name": "Lift",
+    "env_name": "LAVA",
     "type": 1,
     "env_kwargs": {
         "has_renderer": False,
@@ -100,7 +104,7 @@ env_args = {
             "interpolation": None,
             "ramp_ratio": 0.2,
         },
-        "robots": ["UR5e"],
+        "robots": ["UR5e_Lava"],
         "camera_depths": True,
         "camera_heights": 84,
         "camera_widths": 84,
@@ -112,7 +116,7 @@ env_args = {
 }
 
 # Define HDF5 file path
-file_path = "/home/sj/Downloads/data.hdf5"
+file_path = "/home/sj/Downloads/image_data.hdf5"
 
 # if not os.path.exists(file_path):
 #     os.makedirs(file_path)
@@ -162,7 +166,7 @@ with h5py.File(file_path, "w") as f:
 
         rewards_data = [0]*(len(low_dim_data[i])-3) + [1]*3
         globals()[f'states_demo_{i}'] = np.array(states_data[i])
-        globals()[f'actions_demo_{i}'] = np.array(action_dataset[i])
+        globals()[f'actions_demo_{i}'] = np.array(next_low_dim_data[i])
         globals()[f'rewards_demo_{i}'] = rewards_data
         globals()[f'dones_demo_{i}'] = rewards_data
 
@@ -189,7 +193,7 @@ with h5py.File(file_path, "w") as f:
         obs_group.create_dataset("robot0_eef_pos", data=np.array(robot_end_eff_pos[i])) 
         obs_group.create_dataset("robot0_eef_quat", data=np.array(robot_end_eff_quat[i]))
         obs_group.create_dataset("object", data=object)
-        obs_group.create_dataset("robot0_eye_in_hand_image", data=locals()[f"images_demo_{i}"])
+        obs_group.create_dataset("robot0_eye_in_hand", data=locals()[f"images_demo_{i}"])
 
         
         next_obs_group = demo_group.create_group("next_obs")
@@ -197,7 +201,7 @@ with h5py.File(file_path, "w") as f:
         next_obs_group.create_dataset("robot0_eef_pos", data=np.array(next_robot_end_eff_pos[i])) 
         next_obs_group.create_dataset("robot0_eef_quat", data=np.array(next_robot_end_eff_quat[i]))  
         next_obs_group.create_dataset("object", data=object)
-        next_obs_group.create_dataset("robot0_eye_in_hand_image", data=locals()[f"images_demo_{i}"])
+        next_obs_group.create_dataset("robot0_eye_in_hand", data=locals()[f"images_demo_{i}"])
 
 
 print("Data has been written to:", file_path)

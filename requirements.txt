@@ -14,4 +14,4 @@ zmq
 xarm
 xarm-python-sdk
 numpy-quaternion
-termcolor==2.4.0
+termcolor

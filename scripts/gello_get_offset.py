@@ -37,7 +37,7 @@ class Args:
 
     @property
     def num_joints(self) -> int:
-        extra_joints = 0 if self.gripper else 0
+        extra_joints = 1 if self.gripper else 0
         return self.num_robot_joints + extra_joints
 
 

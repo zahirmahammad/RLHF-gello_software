@@ -69,10 +69,6 @@ class RealSenseCamera(CameraDriver):
         depth_frame = frames.get_depth_frame()
         depth_image = np.asanyarray(depth_frame.get_data())
         # depth_image = cv2.convertScaleAbs(depth_image, alpha=0.03)
-
-        # Apply colormap on depth image (image must be converted to 8-bit per pixel first)
-        depth_colormap = cv2.applyColorMap(cv2.convertScaleAbs(depth_image, alpha=0.03), cv2.COLORMAP_JET)
-
         if img_size is None:
             image = color_image[:, :, ::-1]
             depth = depth_image
@@ -84,18 +80,17 @@ class RealSenseCamera(CameraDriver):
         if self._flip:
             image = cv2.rotate(image, cv2.ROTATE_180)
             depth = cv2.rotate(depth, cv2.ROTATE_180)[:, :, None]
-            # depth_colormap = cv2.rotate(depth_colormap, cv2.ROTATE_180)
         else:
             depth = depth[:, :, None]
 
-        return image, depth, depth_colormap
+        return image, depth
 
 
 def _debug_read(camera, save_datastream=False):
     import cv2
 
-    # cv2.namedWindow("image")
-    # cv2.namedWindow("depth")
+    cv2.namedWindow("image")
+    cv2.namedWindow("depth")
     counter = 0
     if not os.path.exists("images"):
         os.makedirs("images")
@@ -103,16 +98,11 @@ def _debug_read(camera, save_datastream=False):
         os.makedirs("stream")
     while True:
         time.sleep(0.1)
-        image, depth, depth_colormap = camera.read()
+        image, depth = camera.read()
         depth = np.concatenate([depth, depth, depth], axis=-1)
         key = cv2.waitKey(1)
-        cv2.namedWindow("image", cv2.WINDOW_NORMAL)
         cv2.imshow("image", image[:, :, ::-1])
-        cv2.setWindowProperty("image", cv2.WND_PROP_AUTOSIZE, cv2.WINDOW_NORMAL)
-        # cv2.imshow("depth", depth)
-        cv2.namedWindow("depth color map", cv2.WINDOW_NORMAL)
-        cv2.imshow("depth color map", depth_colormap)
-        cv2.setWindowProperty("depth color map", cv2.WND_PROP_AUTOSIZE, cv2.WINDOW_NORMAL)
+        cv2.imshow("depth", depth)
         if key == ord("s"):
             cv2.imwrite(f"images/image_{counter}.png", image[:, :, ::-1])
             cv2.imwrite(f"images/depth_{counter}.png", depth)
@@ -128,6 +118,6 @@ if __name__ == "__main__":
     device_ids = get_device_ids()
     print(f"Found {len(device_ids)} devices")
     print(device_ids)
-    rs = RealSenseCamera(flip=False, device_id=device_ids[0])
-    im, depth, depth_color = rs.read()
-    _debug_read(rs, save_datastream=False)
+    rs = RealSenseCamera(flip=True, device_id=device_ids[0])
+    im, depth = rs.read()
+    _debug_read(rs, save_datastream=True)

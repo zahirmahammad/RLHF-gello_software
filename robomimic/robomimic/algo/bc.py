@@ -548,6 +548,8 @@ class BC_RNN(BC):
         assert not self.nets.training
 
         if self._rnn_hidden_state is None or self._rnn_counter % self._rnn_horizon == 0:
+            # print(obs_dict.values())
+            print(list(obs_dict.values())[0].shape)
             batch_size = list(obs_dict.values())[0].shape[0]
             self._rnn_hidden_state = self.nets["policy"].get_rnn_init_state(batch_size=batch_size, device=self.device)
 
@@ -559,9 +561,11 @@ class BC_RNN(BC):
         obs_to_use = obs_dict
         if self._rnn_is_open_loop:
             # replace current obs with last recorded obs
+            print('in open loop')
             obs_to_use = self._open_loop_obs
 
         self._rnn_counter += 1
+        print("here")
         action, self._rnn_hidden_state = self.nets["policy"].forward_step(
             obs_to_use, goal_dict=goal_dict, rnn_state=self._rnn_hidden_state)
         return action

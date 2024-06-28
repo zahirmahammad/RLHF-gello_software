@@ -342,9 +342,9 @@ def config_from_checkpoint(algo_name=None, ckpt_path=None, ckpt_dict=None, verbo
     config_dict = json.loads(ckpt_dict['config'])
     update_config(cfg=config_dict)
 
-    if verbose:
-        print("============= Loaded Config =============")
-        print(json.dumps(config_dict, indent=4))
+    # if verbose:
+    #     print("============= Loaded Config =============")
+    #     print(json.dumps(config_dict, indent=4))
 
     config = config_factory(algo_name, dic=config_dict)
 
@@ -411,9 +411,9 @@ def policy_from_checkpoint(device=None, ckpt_path=None, ckpt_dict=None, verbose=
     model.deserialize(ckpt_dict["model"])
     model.set_eval()
     model = RolloutPolicy(model, obs_normalization_stats=obs_normalization_stats)
-    if verbose:
-        print("============= Loaded Policy =============")
-        print(model)
+    # if verbose:
+    #     print("============= Loaded Policy =============")
+    #     print(model)
     return model, ckpt_dict
 
 
@@ -456,9 +456,9 @@ def env_from_checkpoint(ckpt_path=None, ckpt_dict=None, env_name=None, render=Fa
     )
     config, _ = config_from_checkpoint(algo_name=ckpt_dict["algo_name"], ckpt_dict=ckpt_dict, verbose=False)
     env = EnvUtils.wrap_env_from_config(env, config=config) # apply environment wrapper, if applicable
-    if verbose:
-        print("============= Loaded Environment =============")
-        print(env)
+    # if verbose:
+    #     print("============= Loaded Environment =============")
+    #     print(env)
     return env, ckpt_dict
 
 

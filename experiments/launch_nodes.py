@@ -10,13 +10,13 @@ from gello.zmq_core.robot_node import ZMQServerRobot
 @dataclass
 class Args:
     robot: str = "xarm"
-    robot_port: int = 6001
-    hostname: str = "127.0.0.1"
+    # robot_port: int = 6001
+    # hostname: str = "127.0.0.1"
 
     ###------ Hardware ------
-    # hostname: str = "192.168.77.243"
-    # robot_ip: str = "192.168.77.20"
-    # robot_port: int = 50003  # for trajectory
+    hostname: str = "192.168.77.243"
+    robot_ip: str = "192.168.77.21"
+    robot_port: int = 50003  # for trajectory
 
 
 
@@ -39,12 +39,38 @@ def launch_robot_server(args: Args):
             Path(__file__).parent.parent / "third_party" / "mujoco_menagerie"
         )
         # xml = MENAGERIE_ROOT / "universal_robots_ur5e" / "scene.xml"
-        xml = Path(__file__).parent.parent / "third_party" / "spoon_grippers" / "universal_robots_ur5e" / "scene.xml"
-        gripper_xml = Path(__file__).parent.parent / "third_party" / "spoon_grippers" / "simple_spoon" / "simple_spoon.xml"
+        xml = Path(__file__).parent.parent / "third_party" / "lava_xmls" / "universal_robots_ur3e" / "scene.xml"
+        gripper_xml = Path(__file__).parent.parent / "third_party" / "lava_xmls" / "simple_spoon" / "simple_spoon.xml"
         from gello.robots.sim_robot import MujocoRobotServer
 
         server = MujocoRobotServer(
             xml_path=xml, gripper_xml_path=None, port=port, host=args.hostname
+        )
+        server.serve()
+    elif args.robot == "sim_urhande":
+        MENAGERIE_ROOT: Path = (
+            Path(__file__).parent.parent / "third_party" / "mujoco_menagerie"
+        )
+        # xml = MENAGERIE_ROOT / "universal_robots_ur5e" / "scene.xml"
+        xml = Path(__file__).parent.parent / "third_party" / "lava_xmls" / "universal_robots_ur3e" / "scene_hande.xml"
+        gripper_xml = MENAGERIE_ROOT / "robotiq_hande" / "hande.xml"
+        from gello.robots.sim_robot import MujocoRobotServer
+
+        server = MujocoRobotServer(
+            xml_path=xml, gripper_xml_path=gripper_xml, port=port, host=args.hostname
+        )
+        server.serve()
+    elif args.robot == "env_urhande":
+        MENAGERIE_ROOT: Path = (
+            Path(__file__).parent.parent / "third_party" / "mujoco_menagerie"
+        )
+        # xml = MENAGERIE_ROOT / "universal_robots_ur5e" / "scene.xml"
+        xml = Path(__file__).parent.parent / "third_party" / "lava_xmls" / "universal_robots_ur3e" / "env_hande.xml"
+        gripper_xml = MENAGERIE_ROOT / "robotiq_hande" / "hande.xml"
+        from gello.robots.sim_robot import MujocoRobotServer
+
+        server = MujocoRobotServer(
+            xml_path=xml, gripper_xml_path=gripper_xml, port=port, host=args.hostname
         )
         server.serve()
     elif args.robot == "sim_panda":
@@ -81,7 +107,7 @@ def launch_robot_server(args: Args):
             from gello.robots.ur import URRobot
 
             # robot = URRobot(robot_ip=args.robot_ip)
-            robot = URRobot(robot_ip=args.robot_ip, no_gripper=True)
+            robot = URRobot(robot_ip=args.robot_ip, no_gripper=False)
         elif args.robot == "panda":
             from gello.robots.panda import PandaRobot
 

@@ -781,8 +781,11 @@ class RNN_MIMO_MLP(Module):
             rnn_state (torch.Tensor or tuple): return the new rnn state (if @return_state)
         """
         for obs_group in self.input_obs_group_shapes:
+            # print(self.input_obs_group_shapes)
             for k in self.input_obs_group_shapes[obs_group]:
                 # first two dimensions should be [B, T] for inputs
+                # print(obs_group, k, inputs[obs_group][k].shape)
+                # print(self.input_obs_group_shapes[obs_group][k])
                 assert inputs[obs_group][k].ndim - 2 == len(self.input_obs_group_shapes[obs_group][k])
 
         # use encoder to extract flat rnn inputs

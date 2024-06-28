@@ -4,10 +4,11 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional, Tuple
-from forward_kinematics import ForwardKinematicsUR5e
 
 import numpy as np
 import tyro
+
+import csv
 
 from gello.agents.agent import BimanualAgent, DummyAgent
 from gello.agents.gello_agent import GelloAgent
@@ -15,7 +16,6 @@ from gello.data_utils.format_obs import save_frame
 from gello.env import RobotEnv
 from gello.robots.robot import PrintRobot
 from gello.zmq_core.robot_node import ZMQClientRobot
-import csv
 
 
 def print_color(*args, color=None, attrs=(), **kwargs):
@@ -29,10 +29,13 @@ def print_color(*args, color=None, attrs=(), **kwargs):
 @dataclass
 class Args:
     agent: str = "none"
-    robot_port: int = 6001
+    # robot_port: int = 6001 #for_mujoco
+    robot_port: int = 50003  # for trajectory
     wrist_camera_port: int = 5000
     base_camera_port: int = 5001
-    hostname: str = "127.0.0.1"
+    # hostname: str = "127.0.0.1" #for_mujoco
+    hostname: str = "192.168.77.243"
+    robot_ip: str = "192.168.77.21" 
     robot_type: str = None  # only needed for quest agent or spacemouse agent
     hz: int = 100
     start_joints: Optional[Tuple[float, ...]] = None
@@ -44,12 +47,10 @@ class Args:
     bimanual: bool = False
     verbose: bool = False
 
-def main(args):
-    action_eff = []
 
+def main(args):
     if args.mock:
         robot_client = PrintRobot(8, dont_print=True)
-        # robot_client = PrintRobot(6, dont_print=True)
         camera_clients = {}
     else:
         camera_clients = {
@@ -98,9 +99,7 @@ def main(args):
         # System setup specific. This reset configuration works well on our setup. If you are mounting the robot
         # differently, you need a separate reset joint configuration.
         reset_joints_left = np.deg2rad([0, -90, -90, -90, 90, 0, 0])
-        # reset_joints_left = np.deg2rad([0, -90, -90, -90, 90, 0])
         reset_joints_right = np.deg2rad([0, -90, 90, -90, -90, 0, 0])
-        # reset_joints_right = np.deg2rad([0, -90, 90, -90, -90, 0])
         reset_joints = np.concatenate([reset_joints_left, reset_joints_right])
         curr_joints = env.get_obs()["joint_positions"]
         max_delta = (np.abs(curr_joints - reset_joints)).max()
@@ -124,16 +123,12 @@ def main(args):
             if args.start_joints is None:
                 reset_joints = np.deg2rad(
                     # [0, -90, 90, -90, -90, 0, 0]
-                    # [0, -90, 90, -90, -90, 0]
-                    [90, -90, -90, -90, 90, 0]
+                    [-90, -90, -90, -90, 90, 90, 0]
                 )  # Change this to your own reset joints
             else:
                 reset_joints = args.start_joints
-            print("Start joints: ", args.start_joints)
             agent = GelloAgent(port=gello_port, start_joints=args.start_joints)
             curr_joints = env.get_obs()["joint_positions"]
-            print("Reset shape", reset_joints.shape)
-            print("Current shape", curr_joints.shape) 
             if reset_joints.shape == curr_joints.shape:
                 max_delta = (np.abs(curr_joints - reset_joints)).max()
                 steps = min(int(max_delta / 0.01), 100)
@@ -159,17 +154,18 @@ def main(args):
     # going to start position
     print("Going to start position")
     start_pos = agent.act(env.get_obs())
+    print("start_pos", start_pos)
     obs = env.get_obs()
     joints = obs["joint_positions"]
+    print("current_joints", joints)
 
     abs_deltas = np.abs(start_pos - joints)
     id_max_joint_delta = np.argmax(abs_deltas)
-    print("Mujoco Joints: ", joints)
-    print("Start Joints: ", start_pos)
+
     max_joint_delta = 0.8
     if abs_deltas[id_max_joint_delta] > max_joint_delta:
         id_mask = abs_deltas > max_joint_delta
-        print()
+ 
         ids = np.arange(len(id_mask))[id_mask]
         for i, delta, joint, current_j in zip(
             ids,
@@ -221,9 +217,8 @@ def main(args):
 
     save_path = None
     start_time = time.time()
-    start_time_print = time.time()
     while True:
-        num = time.time() - start_time_print
+        num = time.time() - start_time
         message = f"\rTime passed: {round(num, 2)}          "
         print_color(
             message,
@@ -253,28 +248,21 @@ def main(args):
             else:
                 raise ValueError(f"Invalid state {state}")
         obs = env.step(action)
-
-        csv_file_path = 'csv/output20.csv'# Writing to CSV file
+        # Specify the file path
+        csv_file_path = '/home/sj/gello_software/csv/output21.csv'      # Writing to CSV file
         with open(csv_file_path, mode='a', newline='') as file:
             writer = csv.writer(file)
             if file.tell() == 0:
-                writer.writerow(['shoulder_pan_angle', 'shoulder_lift_angle', 'elbow_angle', 'wrist1_angle', 'wrist2_angle', 'wrist3_angle', 'end_eff_x', 'end_eff_y', 'end_eff_z', 'end_eff_roll', 'end_eff_pitch', 'end_eff_yaw', 'end_eff_w', 'end_eff_xq', 'end_eff_yq', 'end_eff_zq'])  # Write the header    writer.writerows(data)
+                writer.writerow(['shoulder_pan_angle', 'shoulder_lift_angle', 'elbow_angle', 'wrist1_angle', 'wrist2_angle', 'wrist3_angle', 'end_eff_x', 'end_eff_y', 'end_eff_z', 'end_eff_roll', 'end_eff_pitch', 'end_eff_yaw', 'end_eff_w', 'end_eff_xq', 'end_eff_yq', 'end_eff_zq', 'gripper_pos'])  # Write the header    writer.writerows(data)
             obs = env.get_obs()["joint_positions"]
 
-            fk = ForwardKinematicsUR5e()
+            obs_end_eff = env.get_obs()["ee_pos_quat"]
 
-            T = fk.get_transformation_matrix(θdeg1=obs[0], θdeg2=obs[1], θdeg3=obs[2], θdeg4=obs[3], θdeg5=obs[4], θdeg6=obs[5])
+            gripper_pos = env.get_obs()["gripper_position"]
 
-            roll, pitch, yaw, x, y, z = fk.transform_to_rpy_and_xyz(T)
-            
-            w, xq, yq, zq = fk.convert_to_quaternions(roll, pitch, yaw)
+            obs_combined = np.concatenate((obs, obs_end_eff, gripper_pos))
 
-            obs = np.append(obs, [x, y, z, roll, pitch, yaw, w, xq, yq, zq])
-
-            # print(obs)
-            if time.time() - start_time > 0.1:
-                writer.writerow(obs)
-                start_time = time.time()
+            writer.writerow(obs_combined)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,67 @@
+<mujoco model="rectangular_bowl">
+    <compiler angle="degree" coordinate="local"/>
+    <option timestep="0.01"/>
+    <size njmax="1000" nconmax="200"/>
+
+    <!-- <visual>
+        <map znear="0.01" zfar="50"/>
+    </visual> -->
+
+    <!-- <default>
+        <geom solimp="0.8 0.9 0.01" solref="0.01 1" friction="1 0.005 0.0001" contype="1" conaffinity="1" condim="3" rgba="0.8 0.8 0.8 1"/>
+        <joint limited="true" damping="1"/>
+    </default> -->
+
+    <worldbody>
+        <!-- Ground plane -->
+        <!-- <geom name="floor" type="plane" pos="0 0 0" size="5 5 0.1" rgba="0.8 0.9 0.8 1"/> -->
+
+        <!-- Rectangular Bowl -->
+        <body>
+        <body name="object">
+            <!-- Bottom -->
+            <geom type="box" size="0.08 0.08 0.005" pos="0 0 -0.020" rgba="0.5 0.5 0.5 1" solimp="0.998 0.998 0.001" solref="0.001 1" density="50" friction="0.95 0.3 0.1" contype="0" conaffinity="0" group="1"/>
+            <geom type="box" size="0.08 0.08 0.005" pos="0 0 -0.020" rgba="0.5 0.5 0.5 1" solimp="0.998 0.998 0.001" solref="0.001 1" density="50" friction="0.95 0.3 0.1" group="0"/>
+            <!-- Side Walls -->
+            <geom type="box" size="0.005 0.08 0.03" pos="0.08 0 0.015" rgba="0.5 0.5 0.5 1" solimp="0.998 0.998 0.001" solref="0.001 1" density="50" friction="0.95 0.3 0.1" contype="0" conaffinity="0" group="1"/>
+            <geom type="box" size="0.005 0.08 0.03" pos="0.08 0 0.015" rgba="0.5 0.5 0.5 1" solimp="0.998 0.998 0.001" solref="0.001 1" density="50" friction="0.95 0.3 0.1" group="0"/>
+
+            <geom type="box" size="0.005 0.08 0.03" pos="-0.08 0 0.015" rgba="0.5 0.5 0.5 1" solimp="0.998 0.998 0.001" solref="0.001 1" density="50" friction="0.95 0.3 0.1" contype="0" conaffinity="0" group="1"/>
+            <geom type="box" size="0.005 0.08 0.03" pos="-0.08 0 0.015" rgba="0.5 0.5 0.5 1" solimp="0.998 0.998 0.001" solref="0.001 1" density="50" friction="0.95 0.3 0.1" group="0"/>
+            
+            <geom type="box" size="0.08 0.005 0.03" pos="0 -0.08 0.015" rgba="0.5 0.5 0.5 1" solimp="0.998 0.998 0.001" solref="0.001 1" density="50" friction="0.95 0.3 0.1" contype="0" conaffinity="0" group="1"/>
+            <geom type="box" size="0.08 0.005 0.03" pos="0 -0.08 0.015" rgba="0.5 0.5 0.5 1" solimp="0.998 0.998 0.001" solref="0.001 1" density="50" friction="0.95 0.3 0.1" group="0"/>
+            
+            <geom type="box" size="0.08 0.005 0.03" pos="0 0.08 0.015" rgba="0.5 0.5 0.5 1" solimp="0.998 0.998 0.001" solref="0.001 1" density="50" friction="0.95 0.3 0.1" contype="0" conaffinity="0" group="1"/>
+            <geom type="box" size="0.08 0.005 0.03" pos="0 0.08 0.015" rgba="0.5 0.5 0.5 1" solimp="0.998 0.998 0.001" solref="0.001 1" density="50" friction="0.95 0.3 0.1" group="0"/>
+        </body>
+
+        <!-- Dynamic Crystals -->
+        <!-- <body name="crystal1" pos="0.01 0.01 0.05">
+            <freejoint/>
+            <geom name="crystal1_geom" type="sphere" pos="0 0 0" size="0.005" rgba="1 0 0 1" density="300"/>
+        </body>
+        <body name="crystal2" pos="-0.01 -0.01 0.05">
+            <freejoint/>
+            <geom name="crystal2_geom" type="sphere" pos="0 0 0" size="0.005" rgba="0 1 0 1" density="300"/>
+        </body>
+        <body name="crystal3" pos="0.01 -0.01 0.05">
+            <freejoint/>
+            <geom name="crystal3_geom" type="sphere" pos="0 0 0" size="0.005" rgba="0 0 1 1" density="300"/>
+        </body>
+        <body name="crystal4" pos="0.015 -0.01 0.05">
+            <freejoint/>
+            <geom name="crystal4_geom" type="sphere" pos="0 0 0" size="0.005" rgba="0 0 1 1" density="300"/>
+        </body> -->
+
+
+
+        <site rgba="0 0 0 0" size="0.005" pos="0 0 -0.082" name="bottom_site"/>
+        <site rgba="0 0 0 0" size="0.005" pos="0 0 0.075" name="top_site"/>
+        <site rgba="0 0 0 0" size="0.005" pos="0.0254 0.0254 0" name="horizontal_radius_site"/>
+        </body>
+
+
+
+    </worldbody>
+</mujoco>
