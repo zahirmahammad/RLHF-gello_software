@@ -4,11 +4,10 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional, Tuple
+import csv
 
 import numpy as np
 import tyro
-
-import csv
 
 from gello.agents.agent import BimanualAgent, DummyAgent
 from gello.agents.gello_agent import GelloAgent
@@ -121,16 +120,26 @@ def main(args):
                         "No gello port found, please specify one or plug in gello"
                     )
             if args.start_joints is None:
-                reset_joints = np.deg2rad(
-                    # [0, -90, 90, -90, -90, 0, 0]
-                    [-90, -90, -90, -90, 90, 90, 0]
+                print('in if condition')
+                reset_joints = (
+                    # [1.57, -1.57, -1.57, -1.57, 1.57, 0.0]
+                    [-1.57, -1.57, -1.57, -1.57, 1.57, 1.57, 0.0]
                 )  # Change this to your own reset joints
             else:
-                reset_joints = args.start_joints
+                reset_joints = np.array(args.start_joints)
             agent = GelloAgent(port=gello_port, start_joints=args.start_joints)
             curr_joints = env.get_obs()["joint_positions"]
-            if reset_joints.shape == curr_joints.shape:
-                max_delta = (np.abs(curr_joints - reset_joints)).max()
+            
+            print("Current Joints", curr_joints)
+            # print("Reset Joints", reset_joints)
+            # print("reset_joints type", type(reset_joints))
+
+            # curr_joints = np.array(curr_joints)
+            print("curr_joints type", type(curr_joints))
+            if len(reset_joints) == len(curr_joints):
+                max_delta = (np.abs(curr_joints - np.array(reset_joints))).max()
+                # print("reset joints_now", reset_joints)
+                print("max_delta", max_delta)   
                 steps = min(int(max_delta / 0.01), 100)
 
                 for jnt in np.linspace(curr_joints, reset_joints, steps):
@@ -154,19 +163,29 @@ def main(args):
     # going to start position
     print("Going to start position")
     start_pos = agent.act(env.get_obs())
-    print("start_pos", start_pos)
-    obs = env.get_obs()
-    joints = obs["joint_positions"]
-    print("current_joints", joints)
+    # here we only care about the first 6 joints
+    # start_pos = start_pos[:6]
+    obs = env.get_obs()  # gets the gello joint positions
+    joints = obs["joint_positions"] # gets the UR5e joint positions
+
+    print("start_pos", (start_pos))
+
+    # print("start_pos type", type(start_pos))
+    # joints = np.array(joints)
+    # print("joints", np.rad2deg(joints))
+    print("joints", joints)
+    # print("joints type", type(joints))
 
     abs_deltas = np.abs(start_pos - joints)
     id_max_joint_delta = np.argmax(abs_deltas)
-
+    print("id_max_joint_delta", id_max_joint_delta)
     max_joint_delta = 0.8
+    print(abs_deltas[id_max_joint_delta])
     if abs_deltas[id_max_joint_delta] > max_joint_delta:
         id_mask = abs_deltas > max_joint_delta
- 
+        # print("id_mask", id_mask)
         ids = np.arange(len(id_mask))[id_mask]
+        # print("ids", ids)
         for i, delta, joint, current_j in zip(
             ids,
             abs_deltas[id_mask],
@@ -185,18 +204,28 @@ def main(args):
 
     max_delta = 0.05
     for _ in range(25):
+        print("getting obs to go to start position")
         obs = env.get_obs()
+        print("got obs", obs)
         command_joints = agent.act(obs)
+        # here we only care about the first 6 joints
+        # command_joints = command_joints[:6]
         current_joints = obs["joint_positions"]
+        print("command_joints", command_joints)
         delta = command_joints - current_joints
         max_joint_delta = np.abs(delta).max()
         if max_joint_delta > max_delta:
+            print("max_joint_delta", max_joint_delta)
             delta = delta / max_joint_delta * max_delta
         env.step(current_joints + delta)
 
     obs = env.get_obs()
     joints = obs["joint_positions"]
-    action = agent.act(obs)
+    # here we only care about the first 6 joints
+    # joints = joints[:6]
+    action = agent.act(obs) # gets the gello joint positions
+    # here we only care about the first 6 joints
+    # action = action[:6]
     if (action - joints > 0.5).any():
         print("Action is too big")
 
@@ -217,53 +246,56 @@ def main(args):
 
     save_path = None
     start_time = time.time()
+    start_time_print = time.time()
     while True:
-        num = time.time() - start_time
-        message = f"\rTime passed: {round(num, 2)}          "
-        print_color(
-            message,
-            color="white",
-            attrs=("bold",),
-            end="",
-            flush=True,
-        )
-        action = agent.act(obs)
-        dt = datetime.datetime.now()
-        if args.use_save_interface:
-            state = kb_interface.update()
-            if state == "start":
-                dt_time = datetime.datetime.now()
-                save_path = (
-                    Path(args.data_dir).expanduser()
-                    / args.agent
-                    / dt_time.strftime("%m%d_%H%M%S")
-                )
-                save_path.mkdir(parents=True, exist_ok=True)
-                print(f"Saving to {save_path}")
-            elif state == "save":
-                assert save_path is not None, "something went wrong"
-                save_frame(save_path, dt, obs, action)
-            elif state == "normal":
-                save_path = None
-            else:
-                raise ValueError(f"Invalid state {state}")
-        obs = env.step(action)
-        # Specify the file path
-        csv_file_path = '/home/sj/RLHF-gello_software/csv/output21.csv'      # Writing to CSV file
-        with open(csv_file_path, mode='a', newline='') as file:
-            writer = csv.writer(file)
-            if file.tell() == 0:
-                writer.writerow(['shoulder_pan_angle', 'shoulder_lift_angle', 'elbow_angle', 'wrist1_angle', 'wrist2_angle', 'wrist3_angle', 'end_eff_x', 'end_eff_y', 'end_eff_z', 'end_eff_xq', 'end_eff_yq', 'end_eff_zq', 'end_eff_w', 'gripper_pos'])  # Write the header    writer.writerows(data)
-            obs = env.get_obs()["joint_positions"]
+            gello_angle = agent.act(obs)
+        # if (-0.523599 > gello_angle[0] > -2.61799) and (-0.785398 > gello_angle[1] > -2.0944) and  (-0.523599 > gello_angle[2] > -2.61799) and (-0.523599 > gello_angle[3] > -2.61799):
+            num = time.time() - start_time_print
+            message = f"\rTime passed: {round(num, 2)}          "
+            print_color(
+                message,
+                color="white",
+                attrs=("bold",),
+                end="",
+                flush=True,
+            )
+            action = agent.act(obs)
+            # here we only care about the first 6 joints
+            # action = action[:6]
+            dt = datetime.datetime.now()
+            if args.use_save_interface:
+                state = kb_interface.update()
+                if state == "start":
+                    dt_time = datetime.datetime.now()
+                    save_path = (
+                        Path(args.data_dir).expanduser()
+                        / args.agent
+                        / dt_time.strftime("%m%d_%H%M%S")
+                    )
+                    save_path.mkdir(parents=True, exist_ok=True)
+                    print(f"Saving to {save_path}")
+                elif state == "save":
+                    assert save_path is not None, "something went wrong"
+                    save_frame(save_path, dt, obs, action)
+                elif state == "normal":
+                    save_path = None
+                else:
+                    raise ValueError(f"Invalid state {state}")
+            obs = env.step(action)
+            csv_file_path = '/home/sj/RLHF-gello_software/csv/output21.csv'      # Writing to CSV file
+            with open(csv_file_path, mode='a', newline='') as file:
+                writer = csv.writer(file)
+                if file.tell() == 0:
+                    writer.writerow(['shoulder_pan_angle', 'shoulder_lift_angle', 'elbow_angle', 'wrist1_angle', 'wrist2_angle', 'wrist3_angle', 'end_eff_x', 'end_eff_y', 'end_eff_z', 'end_eff_xq', 'end_eff_yq', 'end_eff_zq', 'end_eff_w', 'gripper_pos'])  # Write the header    writer.writerows(data)
+                obs = env.get_obs()["joint_positions"]
 
-            obs_end_eff = env.get_obs()["ee_pos_quat"]
+                obs_end_eff = env.get_obs()["ee_pos_quat"]
 
-            # gripper_pos = env.get_obs()["gripper_position"]
+                # gripper_pos = env.get_obs()["gripper_position"]
 
-            obs_combined = np.concatenate((obs, obs_end_eff))
+                obs_combined = np.concatenate((obs, obs_end_eff))
 
-            writer.writerow(obs_combined)
-
-
+                writer.writerow(obs_combined)
+                
 if __name__ == "__main__":
     main(tyro.cli(Args))
